@@ -80,3 +80,13 @@ void checkSawRoomTrigger(JNIEnv* env) {
         SANITY -= 0.5f;
     }
 }
+
+void checkHealthStatus(JNIEnv* env) {
+    if (HEALTH <= 0.0f) {
+        jclass logicClass = env->FindClass("java/main/GameLogic");
+        if (logicClass) {
+            jmethodID die = env->GetStaticMethodID(logicClass, "triggerDeath", "()V");
+            env->CallStaticVoidMethod(logicClass, die);
+        }
+    }
+}

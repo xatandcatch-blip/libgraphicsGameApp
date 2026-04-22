@@ -2,16 +2,22 @@ package java.main;
 
 public class GameLogic {
     private static boolean isHiding = false;
+    private static boolean isDead = false;
 
     public static void setHidingState(boolean state) {
         isHiding = state;
     }
 
-    // Flashlight flickers and drains when the Entity is within 5 meters
+    public static void triggerDeath() {
+        isDead = true;
+    }
+
+    public static boolean checkDeathStatus() {
+        return isDead;
+    }
+
     public static float getBatteryDrainRate(float distance) {
-        if (distance > 5.0f) return 0.01f; // Standard drain
-        
-        // Rapid drain when the monster is breathing down your neck
+        if (distance > 5.0f) return 0.01f;
         return 0.01f + (5.0f - distance) / 10.0f;
     }
 
