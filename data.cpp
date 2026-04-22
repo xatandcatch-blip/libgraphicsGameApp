@@ -1,53 +1,38 @@
 #include <jni.h>
 #include <fstream>
 #include <stdint.h>
+#include <algorithm> // For std::clamp
 
 extern "C" {
-    // Data Structure for the .rune format
-    struct SaveData {
-        float px, py, pz;
-        float health, stamina, battery, sanity;
-        int current_chunk;
-    };
-
-    // External stats (restored)
-    float P_X = 0.0f, P_Y = 0.0f, P_Z = 0.0f;
+    // Game State
     float HEALTH = 100.0f, STAMINA = 100.0f, BATTERY = 100.0f, SANITY = 100.0f;
-    int CURRENT_CHUNK = 0;
+    float P_X = 0.0f, P_Z = 0.0f;
 
-    // JNI Mapping: java.graphics.PlayerEngine.saveGame(String path)
-    JNIEXPORT void JNICALL Java_java_graphics_PlayerEngine_saveGame(JNIEnv* env, jclass clazz, jstring path) {
-        const char* nativePath = env->GetStringUTFChars(path, 0);
-        
-        SaveData data = {P_X, 0.0f, P_Z, HEALTH, STAMINA, BATTERY, SANITY, CURRENT_CHUNK};
-        
-        std::ofstream file(nativePath, std::ios::binary);
-        if (file.is_open()) {
-            file.write(reinterpret_cast<char*>(&data), sizeof(SaveData));
-            file.close();
-        }
-        
-        env->ReleaseStringUTFChars(path, nativePath);
+    // Hard Clamp Function: The "Guardian" of the memory
+    void applySafetyClamps() {
+        HEALTH = std::clamp(HEALTH, 0.0f, 100.0f);
+        STAMINA = std::clamp(STAMINA, 0.0f, 100.0f);
+        BATTERY = std::clamp(BATTERY, 0.0f, 100.0f);
+        SANITY = std::clamp(SANITY, 0.0f, 100.0f);
     }
 
-    // JNI Mapping: java.graphics.PlayerEngine.loadGame(String path)
-    JNIEXPORT void JNICALL Java_java_graphics_PlayerEngine_loadGame(JNIEnv* env, jclass clazz, jstring path) {
+    // JNI Mapped: Process Tick with Safety
+    JNIEXPORT void JNICALL Java_java_main_Smali_EngineStartLogic_processTick(JNIEnv* env, jclass clazz, jboolean sprinting, jboolean lightOn) {
+        // ... (rest of your movement and AI logic)
+
+        // Run safety check at the end of every frame
+        applySafetyClamps();
+    }
+
+    // Binary Save/Load (Native .rune)
+    JNIEXPORT void JNICALL Java_java_graphics_PlayerEngine_saveGame(JNIEnv* env, jclass clazz, jstring path) {
+        applySafetyClamps(); // Secure data before saving
         const char* nativePath = env->GetStringUTFChars(path, 0);
-        
-        SaveData data;
-        std::ifstream file(nativePath, std::ios::binary);
+        std::ofstream file(nativePath, std::ios::binary);
         if (file.is_open()) {
-            file.read(reinterpret_cast<char*>(&data), sizeof(SaveData));
-            
-            // Restore state
-            P_X = data.px; P_Z = data.pz;
-            HEALTH = data.health; STAMINA = data.stamina;
-            BATTERY = data.battery; SANITY = data.sanity;
-            CURRENT_CHUNK = data.current_chunk;
-            
+            file.write(reinterpret_cast<char*>(&HEALTH), sizeof(float) * 4); // Save H/S/B/S block
             file.close();
         }
-        
         env->ReleaseStringUTFChars(path, nativePath);
     }
 }
