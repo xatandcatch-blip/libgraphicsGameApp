@@ -1,15 +1,15 @@
 #include <jni.h>
 
-extern int GRAPHICS_QUALITY;
+extern float MASTER_VOLUME;
 
 extern "C" {
-    JNIEXPORT void JNICALL Java_java_graphics_PlayerEngine_setGraphicsQuality(JNIEnv* env, jclass clazz, jint quality) {
-        if (quality >= 0 && quality <= 2) {
-            GRAPHICS_QUALITY = quality;
+    JNIEXPORT void JNICALL Java_java_graphics_PlayerEngine_setVolume(JNIEnv* env, jclass clazz, jfloat volume) {
+        if (volume >= 0.0f && volume <= 1.0f) {
+            MASTER_VOLUME = volume;
         }
     }
 
-    JNIEXPORT jint JNICALL Java_java_graphics_PlayerEngine_getGraphicsQuality(JNIEnv* env, jclass clazz) {
-        return GRAPHICS_QUALITY;
+    JNIEXPORT jfloat JNICALL Java_java_graphics_PlayerEngine_getVolume(JNIEnv* env, jclass clazz) {
+        return MASTER_VOLUME;
     }
 }
