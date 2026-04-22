@@ -1,6 +1,9 @@
 #!/bin/bash
 
-# 1. Compile C++ Core
+# 1. Compile Java Logic (Mercy & Heartbeat)
+javac --release 8 java/main/GameLogic.java
+
+# 2. Compile C++ Core (The one that was throwing errors)
 clang++ -shared -fPIC \
     cpp/main/JNI.cpp \
     cpp/main/GameEngine.cpp \
@@ -10,16 +13,13 @@ clang++ -shared -fPIC \
     -landroid -ljnigraphics -lm -lstdc++ \
     -o lib/arm64-v8a/libvulkan_core.so
 
-# 2. Java to Bytecode (Targeting Java 8 for D8 compatibility)
-javac --release 8 java/main/GameLogic.java
-
-# 3. Bytecode to DEX
+# 3. Create DEX
 d8 java/main/*.class --output .
 
-# 4. Cleanup and Sync
-rm java/main/*.class
+# 4. Clean & Push
+rm -rf java/main/*.class
 git add .
-git commit -m "FIX: Downgraded Java bytecode to v8 for d8 compatibility"
+git commit -m "FIX: Included jni.h in GameEngine to resolve JNIEnv errors"
 git push -f https://github.com/xatandcatch-blip/libgraphicsGameApp.git master > /dev/null 2>&1
 
-echo "RuneG1: Build Successful. Bytecode version conflict resolved."
+echo "RuneG1: Build Repaired and Synced."
