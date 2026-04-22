@@ -1,17 +1,21 @@
 #include <jni.h>
 
 extern void runEngineTick();
-extern void updateBattery(bool isOn, bool isSprinting);
-extern bool useBatteryItem();
+extern bool checkScareTrigger();
+extern float SHAKE_X, SHAKE_Z;
 
 extern "C" {
     JNIEXPORT void JNICALL Java_java_main_Smali_EngineStartLogic_processTick(JNIEnv* env, jclass clazz, jboolean lightOn, jboolean sprinting) {
         runEngineTick();
-        updateBattery((bool)lightOn, (bool)sprinting);
+        // Update battery logic (handled in GameEngine)
     }
 
-    // Returns true if a battery was used
-    JNIEXPORT jboolean JNICALL Java_java_main_Smali_EngineStartLogic_replaceBattery(JNIEnv* env, jclass clazz) {
-        return (jboolean)useBatteryItem();
+    // Returns a jump-scare signal
+    JNIEXPORT jboolean JNICALL Java_java_main_Smali_EngineStartLogic_shouldScare(JNIEnv* env, jclass clazz) {
+        return (jboolean)checkScareTrigger();
     }
+
+    // Get Native Hallucination Offsets for the Camera
+    JNIEXPORT jfloat JNICALL Java_java_main_Smali_EngineStartLogic_getShakeX(JNIEnv* env, jclass clazz) { return SHAKE_X; }
+    JNIEXPORT jfloat JNICALL Java_java_main_Smali_EngineStartLogic_getShakeZ(JNIEnv* env, jclass clazz) { return SHAKE_Z; }
 }
