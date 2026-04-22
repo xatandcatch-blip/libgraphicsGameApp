@@ -6,13 +6,13 @@ extern void executeBinaryLoad(const char* path);
 extern "C" {
     JNIEXPORT void JNICALL Java_java_graphics_PlayerEngine_saveGame(JNIEnv* env, jclass clazz, jstring path) {
         const char* nativePath = env->GetStringUTFChars(path, 0);
-        executeBinarySave(nativePath);
+        executeBinarySave(nativePath); // Fixed: Call Save here
         env->ReleaseStringUTFChars(path, nativePath);
     }
 
     JNIEXPORT void JNICALL Java_java_graphics_PlayerEngine_loadGame(JNIEnv* env, jclass clazz, jstring path) {
         const char* nativePath = env->GetStringUTFChars(path, 0);
-        executeBinaryLoad(nativePath);
+        executeBinaryLoad(nativePath); // Correct: Call Load here
         env->ReleaseStringUTFChars(path, nativePath);
     }
 }
