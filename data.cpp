@@ -1,52 +1,53 @@
 #include <jni.h>
+#include <fstream>
 #include <stdint.h>
-#include <math.h>
-#include <stdlib.h>
 
 extern "C" {
-    // Master State
-    float P_X = 0.0f, P_Z = 0.0f, E_X = 10.0f, E_Z = 10.0f;
-    float HEALTH = 100.0f, SANITY = 100.0f, BATTERY = 100.0f;
-    bool IS_DEAD = false;
+    // Data Structure for the .rune format
+    struct SaveData {
+        float px, py, pz;
+        float health, stamina, battery, sanity;
+        int current_chunk;
+    };
 
-    // --- Audio Logic: Heartbeat Pulse ---
-    JNIEXPORT jfloat JNICALL Java_java_graphics_PlayerEngine_getHeartbeatRate(JNIEnv* env, jclass clazz) {
-        float dx = P_X - E_X, dz = P_Z - E_Z;
-        float dist = sqrtf(dx*dx + dz*dz);
+    // External stats (restored)
+    float P_X = 0.0f, P_Y = 0.0f, P_Z = 0.0f;
+    float HEALTH = 100.0f, STAMINA = 100.0f, BATTERY = 100.0f, SANITY = 100.0f;
+    int CURRENT_CHUNK = 0;
+
+    // JNI Mapping: java.graphics.PlayerEngine.saveGame(String path)
+    JNIEXPORT void JNICALL Java_java_graphics_PlayerEngine_saveGame(JNIEnv* env, jclass clazz, jstring path) {
+        const char* nativePath = env->GetStringUTFChars(path, 0);
         
-        if (dist > 15.0f) return 0.0f; // Silence
-        // Returns a frequency multiplier (1.0 to 3.0)
-        return 1.0f + (2.0f * (1.0f - (dist / 15.0f)));
+        SaveData data = {P_X, 0.0f, P_Z, HEALTH, STAMINA, BATTERY, SANITY, CURRENT_CHUNK};
+        
+        std::ofstream file(nativePath, std::ios::binary);
+        if (file.is_open()) {
+            file.write(reinterpret_cast<char*>(&data), sizeof(SaveData));
+            file.close();
+        }
+        
+        env->ReleaseStringUTFChars(path, nativePath);
     }
 
-    // --- World Gen Logic ---
-    JNIEXPORT jint JNICALL Java_java_main_Smali_EngineStartLogic_generateChunk(JNIEnv* env, jclass clazz, jint seed) {
-        static int chunk_count = 0;
-        srand(seed + chunk_count++);
-        return (rand() % 4); 
-    }
-
-    // --- Main Survival & AI Tick ---
-    JNIEXPORT void JNICALL Java_java_main_Smali_EngineStartLogic_processTick(JNIEnv* env, jclass clazz, jboolean sprinting, jboolean lightOn) {
-        if (IS_DEAD) return;
-
-        float noise = sprinting ? 2.0f : 0.3f;
-        float dx = P_X - E_X, dz = P_Z - E_Z;
-        float dist = sqrtf(dx*dx + dz*dz);
-
-        // AI "Hearing" movement
-        if (dist < (8.0f * noise)) {
-            E_X += (dx / dist) * 0.06f;
-            E_Z += (dz / dist) * 0.06f;
-        }
-
-        // Survival Mechanics
-        if (lightOn) BATTERY -= 0.08f;
-        if (!lightOn) SANITY -= 0.02f;
+    // JNI Mapping: java.graphics.PlayerEngine.loadGame(String path)
+    JNIEXPORT void JNICALL Java_java_graphics_PlayerEngine_loadGame(JNIEnv* env, jclass clazz, jstring path) {
+        const char* nativePath = env->GetStringUTFChars(path, 0);
         
-        if (dist < 1.2f) {
-            HEALTH -= 10.0f;
-            if (HEALTH <= 0) IS_DEAD = true;
+        SaveData data;
+        std::ifstream file(nativePath, std::ios::binary);
+        if (file.is_open()) {
+            file.read(reinterpret_cast<char*>(&data), sizeof(SaveData));
+            
+            // Restore state
+            P_X = data.px; P_Z = data.pz;
+            HEALTH = data.health; STAMINA = data.stamina;
+            BATTERY = data.battery; SANITY = data.sanity;
+            CURRENT_CHUNK = data.current_chunk;
+            
+            file.close();
         }
+        
+        env->ReleaseStringUTFChars(path, nativePath);
     }
 }
