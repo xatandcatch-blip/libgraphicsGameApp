@@ -1,12 +1,12 @@
-/* libgraphicsGame Native Data Map */
+/* libgraphicsGameApp Native Persistence Layer */
 #include <stdint.h>
 
 extern "C" {
+    // Live Player Symbols
     int32_t PLAYER_HEALTH = 100;
-    int32_t PLAYER_LEVEL = 1;
-    int32_t PLAYER_XP = 0;
+    int32_t PLAYER_LEVEL = 10;
+    int32_t PLAYER_XP = 5000;
     int32_t PLAYER_STAMINA = 100;
-    const char* PLAYER_NAME = "RuneWarrior";
     const char* ENGINE_VERSION = "v1.0.92-PRO";
-    bool IS_SFD_LOADED = true;
+    const char* SYNC_STATUS = "AUTHORIZED";
 }
