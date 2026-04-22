@@ -90,3 +90,32 @@ void checkHealthStatus(JNIEnv* env) {
         }
     }
 }
+
+// Item positions (Static for now, would be streamed later)
+float SODA_X = 2.0f, SODA_Z = -3.0f;
+bool SODA_COLLECTED = false;
+
+void attemptInteraction() {
+    float distToSoda = calculateDistance(P_X, P_Z, SODA_X, SODA_Z);
+    
+    if (distToSoda < 1.5f && !SODA_COLLECTED) {
+        SODA_COLLECTED = true;
+        SODA_COUNT++;
+        SANITY += 20.0f; // Soda gives a quick sanity boost
+    }
+}
+
+bool SAW_ROOM_LOCKED = false;
+
+void updateSawRoomLogic() {
+    // Trigger: Player enters the Saw Room (Center of the Mansion)
+    if (!SAW_ROOM_LOCKED && P_X > -0.5f && P_X < 0.5f && P_Z > -0.5f && P_Z < 0.5f) {
+        SAW_ROOM_LOCKED = true;
+        
+        // Sound trigger (pseudo-code for now)
+        // triggerAmbientSound("gate_slam.wav");
+        
+        // Increase difficulty: Entity gets "Enraged"
+        E_X += 0.5f; 
+    }
+}
