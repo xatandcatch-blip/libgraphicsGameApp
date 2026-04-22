@@ -1,17 +1,17 @@
 #include <stdint.h>
 
 extern "C" {
-    // Core Engine Stats
+    // Player Survival Stats
     int32_t PLAYER_HEALTH = 100;
-    int32_t PLAYER_LEVEL = 36;
+    int32_t PLAYER_STAMINA = 100;
     
-    // Domain Expansion: Infinite Void Logic
-    bool DOMAIN_ACTIVE = false;
-    float DOMAIN_RADIUS = 50.0f;
-    int32_t DOMAIN_SURE_HIT_DAMAGE = 9999;
+    // Saw Room Engine Variables
+    bool TRAP_ACTIVE = false;
+    float SAW_SPEED = 5.5f;
+    int32_t ROOM_LIGHT_INTENSITY = 10; // Dark for Horror
 
-    // Trigger Function for Vulkan Core
-    void triggerDomain() {
-        DOMAIN_ACTIVE = true;
+    // Native Function to trigger room events
+    void activateSawTrap() {
+        TRAP_ACTIVE = true;
     }
 }
