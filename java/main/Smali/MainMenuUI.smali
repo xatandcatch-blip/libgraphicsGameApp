@@ -13,3 +13,11 @@
     # Logic to initialize GameEngine and start the tick
     return-void
 .end method
+
+.method public static onConfirmDelete()V
+    .registers 1
+    const-string v0, "save.rune"
+    # The 'Warning' logic happens in the Java/UI layer before calling this
+    invoke-static {v0}, Ljava/graphics/PlayerEngine;->deleteSaveFile(Ljava/lang/String;)Z
+    return-void
+.end method

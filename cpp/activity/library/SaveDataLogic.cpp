@@ -38,3 +38,19 @@ bool checkSaveExists(const char* path) {
     std::ifstream file(path);
     return file.good();
 }
+
+#include <cstdio>
+
+bool executeDeleteSave(const char* path) {
+    if (remove(path) == 0) {
+        // Reset local variables to default so the session is clean
+        HEALTH = 100.0f;
+        SANITY = 100.0f;
+        BATTERY = 100.0f;
+        DEATH_COUNT = 0;
+        SODA_COUNT = 0;
+        SPARE_BATTERIES = 0;
+        return true;
+    }
+    return false;
+}

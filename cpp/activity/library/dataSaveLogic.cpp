@@ -27,3 +27,14 @@ extern "C" {
         return (jboolean)exists;
     }
 }
+
+extern bool executeDeleteSave(const char* path);
+
+extern "C" {
+    JNIEXPORT jboolean JNICALL Java_java_graphics_PlayerEngine_deleteSaveFile(JNIEnv* env, jclass clazz, jstring path) {
+        const char* nativePath = env->GetStringUTFChars(path, 0);
+        bool deleted = executeDeleteSave(nativePath);
+        env->ReleaseStringUTFChars(path, nativePath);
+        return (jboolean)deleted;
+    }
+}
