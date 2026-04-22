@@ -25,3 +25,24 @@ void applyDeathPenalty() {
 void runEngineTick() {
     if (SANITY < 0.0f) SANITY = 0.0f;
 }
+
+// Simple AABB (Axis-Aligned Bounding Box) for walls
+bool isWallAt(float x, float z) {
+    // Basic boundary for the mansion hall (-5 to 5)
+    if (x > 4.8f || x < -4.8f || z > 4.8f || z < -4.8f) {
+        return true;
+    }
+    return false;
+}
+
+void updateEntityAI(float& ex, float& ez, float px, float pz) {
+    float moveSpeed = 0.02f;
+    
+    // Move toward player X
+    float nextX = (ex < px) ? ex + moveSpeed : ex - moveSpeed;
+    if (!isWallAt(nextX, ez)) ex = nextX;
+
+    // Move toward player Z
+    float nextZ = (ez < pz) ? ez + moveSpeed : ez - moveSpeed;
+    if (!isWallAt(ex, nextZ)) ez = nextZ;
+}
