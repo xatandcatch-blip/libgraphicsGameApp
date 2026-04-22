@@ -51,3 +51,32 @@ void applyDeathPenalty() {
 void runEngineTick() {
     if (SANITY < 0.0f) SANITY = 0.0f;
 }
+
+void updateFlashlight(JNIEnv* env, float distToEntity) {
+    jclass logicClass = env->FindClass("java/main/GameLogic");
+    if (logicClass) {
+        jmethodID getDrain = env->GetStaticMethodID(logicClass, "getBatteryDrainRate", "(F)F");
+        float drainAmount = env->CallStaticFloatMethod(logicClass, getDrain, distToEntity);
+        
+        // Apply the drain to the global battery
+        BATTERY -= drainAmount;
+        
+        if (BATTERY < 0.0f) {
+            BATTERY = 0.0f;
+            // Trigger: Flashlight dies, player is in total darkness
+        }
+    }
+}
+
+void checkSawRoomTrigger(JNIEnv* env) {
+    // If player is inside the "Saw Room" coordinates (e.g., center of the hall)
+    if (P_X > -1.0f && P_X < 1.0f && P_Z > -1.0f && P_Z < 1.0f) {
+        // Force hiding to false via JNI
+        jclass logicClass = env->FindClass("java/main/GameLogic");
+        jmethodID setHiding = env->GetStaticMethodID(logicClass, "setHidingState", "(Z)V");
+        env->CallStaticVoidMethod(logicClass, setHiding, false);
+        
+        // Maybe drop sanity rapidly
+        SANITY -= 0.5f;
+    }
+}
