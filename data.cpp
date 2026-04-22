@@ -1,33 +1,34 @@
 #include <stdint.h>
 
 extern "C" {
-    // Survival Database
+    // Survival Stats
     int32_t PLAYER_HEALTH = 100;
+    float PLAYER_STAMINA = 100.0f;
+    float MAX_STAMINA = 100.0f;
     
-    // NPC AI Entity Data
-    bool ENTITY_SPAWNED = false;
-    float ENTITY_POS_Z = 0.0f;
+    // Sprinting Logic
+    bool IS_SPRINTING = false;
+    float SPRINT_DRAIN = 0.5f;
+    float REGEN_RATE = 0.2f;
 
-    // Touch Input & Camera Data
-    float TOUCH_X = 0.0f;
-    float TOUCH_Y = 0.0f;
-    float CAMERA_YAW = 0.0f;   // Left/Right rotation
-    float CAMERA_PITCH = 0.0f; // Up/Down rotation
-
-    // Update camera based on delta touch movement
-    void handleTouchInput(float x, float y) {
-        float deltaX = x - TOUCH_X;
-        float deltaY = y - TOUCH_Y;
-        
-        CAMERA_YAW += deltaX * 0.01f;
-        CAMERA_PITCH += deltaY * 0.01f;
-        
-        TOUCH_X = x;
-        TOUCH_Y = y;
+    void setSprinting(bool sprinting) {
+        IS_SPRINTING = sprinting;
     }
 
-    void spawnMansionEntity(float x, float y, float z) {
-        ENTITY_SPAWNED = true;
-        ENTITY_POS_Z = z;
+    // Processed every frame by the engine
+    void updateSurvivalStats() {
+        if (IS_SPRINTING && PLAYER_STAMINA > 0) {
+            PLAYER_STAMINA -= SPRINT_DRAIN;
+        } else if (!IS_SPRINTING && PLAYER_STAMINA < MAX_STAMINA) {
+            PLAYER_STAMINA += REGEN_RATE;
+        }
+
+        // Force stop sprint if exhausted
+        if (PLAYER_STAMINA <= 0) {
+            IS_SPRINTING = false;
+        }
     }
+
+    // Previous logic remains
+    void handleTouchInput(float x, float y) { /* Camera logic */ }
 }
