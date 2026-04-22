@@ -4,55 +4,49 @@
 #include <stdlib.h>
 
 extern "C" {
-    // Player & Entity Stats
+    // Master State
     float P_X = 0.0f, P_Z = 0.0f, E_X = 10.0f, E_Z = 10.0f;
     float HEALTH = 100.0f, SANITY = 100.0f, BATTERY = 100.0f;
     bool IS_DEAD = false;
 
-    // World & AI Logic
-    int CURRENT_CHUNK = 0;
-    float NOISE_LEVEL = 0.0f;
-    float BASE_AI_SPEED = 0.04f;
-
-    // Helper: Seed-based World Generation
-    JNIEXPORT jint JNICALL Java_java_main_Smali_EngineStartLogic_generateChunk(JNIEnv* env, jclass clazz, jint seed) {
-        srand(seed + CURRENT_CHUNK);
-        CURRENT_CHUNK++;
-        return (rand() % 4); // Returns a room type: 0=Hall, 1=Room, 2=Closet, 3=Trap
+    // --- Audio Logic: Heartbeat Pulse ---
+    JNIEXPORT jfloat JNICALL Java_java_graphics_PlayerEngine_getHeartbeatRate(JNIEnv* env, jclass clazz) {
+        float dx = P_X - E_X, dz = P_Z - E_Z;
+        float dist = sqrtf(dx*dx + dz*dz);
+        
+        if (dist > 15.0f) return 0.0f; // Silence
+        // Returns a frequency multiplier (1.0 to 3.0)
+        return 1.0f + (2.0f * (1.0f - (dist / 15.0f)));
     }
 
-    // Main Tick: Integrated Noise Detection
+    // --- World Gen Logic ---
+    JNIEXPORT jint JNICALL Java_java_main_Smali_EngineStartLogic_generateChunk(JNIEnv* env, jclass clazz, jint seed) {
+        static int chunk_count = 0;
+        srand(seed + chunk_count++);
+        return (rand() % 4); 
+    }
+
+    // --- Main Survival & AI Tick ---
     JNIEXPORT void JNICALL Java_java_main_Smali_EngineStartLogic_processTick(JNIEnv* env, jclass clazz, jboolean sprinting, jboolean lightOn) {
         if (IS_DEAD) return;
 
-        // 1. Noise Calculation
-        if (sprinting) {
-            NOISE_LEVEL = 1.5f; // Sprints are loud
-        } else {
-            NOISE_LEVEL = 0.2f; // Crouching/Walking is quiet
-        }
-
-        // 2. AI Hearing Logic
+        float noise = sprinting ? 2.0f : 0.3f;
         float dx = P_X - E_X, dz = P_Z - E_Z;
         float dist = sqrtf(dx*dx + dz*dz);
 
-        if (dist < (5.0f * NOISE_LEVEL)) {
-            // Entity "Hears" you and moves toward P_X, P_Z faster
-            E_X += (dx / dist) * (BASE_AI_SPEED * 1.5f);
-            E_Z += (dz / dist) * (BASE_AI_SPEED * 1.5f);
-        } else {
-            // Patrol/Idle speed
-            E_X += 0.01f; 
+        // AI "Hearing" movement
+        if (dist < (8.0f * noise)) {
+            E_X += (dx / dist) * 0.06f;
+            E_Z += (dz / dist) * 0.06f;
         }
 
-        // 3. Collision & Survival Logic
+        // Survival Mechanics
+        if (lightOn) BATTERY -= 0.08f;
+        if (!lightOn) SANITY -= 0.02f;
+        
         if (dist < 1.2f) {
             HEALTH -= 10.0f;
             if (HEALTH <= 0) IS_DEAD = true;
         }
-
-        // 4. Sanity & Battery
-        if (!lightOn) SANITY -= 0.02f;
-        if (lightOn) BATTERY -= 0.08f;
     }
 }
