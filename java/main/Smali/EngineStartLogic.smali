@@ -1,19 +1,17 @@
 .class public Ljava/main/Smali/EngineStartLogic;
 .super Ljava/lang/Object;
 
+# Native method to generate randomized mansion layout
+.method public static native generateChunk(I)I
+.end method
+
+# Tick handler with death check
 .method public static handleTick(Landroid/app/Activity;)V
     .registers 2
-    # Check if the player is dead via Native Core
     invoke-static {}, Ljava/graphics/PlayerEngine;->checkDeathStatus()Z
     move-result v0
-    
-    if-eqz v0, :cond_10
-    
-    # Logic to stop game loop and show death UI
-    # Example: Intent to DeathActivity
+    if-eqz v0, :cond_8
     return-void
-
-    :cond_10
-    # Continue normal tick if alive
+    :cond_8
     return-void
 .end method
