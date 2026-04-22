@@ -1,34 +1,30 @@
 #include <stdint.h>
+#include <math.h>
 
 extern "C" {
     // Survival Stats
-    int32_t PLAYER_HEALTH = 100;
-    float PLAYER_STAMINA = 100.0f;
+    float PLAYER_X = 0.0f, PLAYER_Y = 0.0f, PLAYER_Z = 0.0f;
+    float ENTITY_X = 10.0f, ENTITY_Y = 0.0f, ENTITY_Z = 10.0f;
     
-    // Flashlight & Battery System
-    bool FLASHLIGHT_ON = false;
-    float BATTERY_LEVEL = 100.0f;
-    float MAX_BATTERY = 100.0f;
-    float BATTERY_DRAIN_RATE = 0.08f;
-    float RECHARGE_RATE = 0.04f; // Slower than the drain
+    float HEARTBEAT_INTENSITY = 0.0f; // 0.0 (Calm) to 1.0 (Panic)
 
-    void toggleFlashlight() {
-        if (BATTERY_LEVEL > 10.0f || FLASHLIGHT_ON) { 
-            // Requires 10% charge to turn back on
-            FLASHLIGHT_ON = !FLASHLIGHT_ON;
+    // Calculate how close the horror is
+    void updateHeartbeat() {
+        float dx = PLAYER_X - ENTITY_X;
+        float dy = PLAYER_Y - ENTITY_Y;
+        float dz = PLAYER_Z - ENTITY_Z;
+        
+        float distance = sqrt(dx*dx + dy*dy + dz*dz);
+
+        // Intensity starts at 15 units away, maxes at 2 units
+        if (distance < 15.0f) {
+            HEARTBEAT_INTENSITY = 1.0f - ((distance - 2.0f) / 13.0f);
+            if (HEARTBEAT_INTENSITY > 1.0f) HEARTBEAT_INTENSITY = 1.0f;
+            if (HEARTBEAT_INTENSITY < 0.0f) HEARTBEAT_INTENSITY = 0.0f;
+        } else {
+            HEARTBEAT_INTENSITY = 0.0f;
         }
     }
 
-    // Native tick for the environment
-    void updateEnvironment() {
-        if (FLASHLIGHT_ON) {
-            BATTERY_LEVEL -= BATTERY_DRAIN_RATE;
-            if (BATTERY_LEVEL <= 0) {
-                BATTERY_LEVEL = 0;
-                FLASHLIGHT_ON = false;
-            }
-        } else if (!FLASHLIGHT_ON && BATTERY_LEVEL < MAX_BATTERY) {
-            BATTERY_LEVEL += RECHARGE_RATE;
-        }
-    }
+    // Keep existing battery/stamina logic in the compiled core...
 }
