@@ -33,3 +33,8 @@ void executeBinaryLoad(const char* path) {
         file.close();
     }
 }
+
+bool checkSaveExists(const char* path) {
+    std::ifstream file(path);
+    return file.good();
+}

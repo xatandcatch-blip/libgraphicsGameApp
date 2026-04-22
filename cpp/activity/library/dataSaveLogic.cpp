@@ -16,3 +16,14 @@ extern "C" {
         env->ReleaseStringUTFChars(path, nativePath);
     }
 }
+
+extern bool checkSaveExists(const char* path);
+
+extern "C" {
+    JNIEXPORT jboolean JNICALL Java_java_graphics_PlayerEngine_hasSaveFile(JNIEnv* env, jclass clazz, jstring path) {
+        const char* nativePath = env->GetStringUTFChars(path, 0);
+        bool exists = checkSaveExists(nativePath);
+        env->ReleaseStringUTFChars(path, nativePath);
+        return (jboolean)exists;
+    }
+}
