@@ -1,21 +1,15 @@
 #include <jni.h>
 
-extern void runEngineTick();
-extern bool checkScareTrigger();
-extern float SHAKE_X, SHAKE_Z;
+extern int GRAPHICS_QUALITY;
 
 extern "C" {
-    JNIEXPORT void JNICALL Java_java_main_Smali_EngineStartLogic_processTick(JNIEnv* env, jclass clazz, jboolean lightOn, jboolean sprinting) {
-        runEngineTick();
-        // Update battery logic (handled in GameEngine)
+    JNIEXPORT void JNICALL Java_java_graphics_PlayerEngine_setGraphicsQuality(JNIEnv* env, jclass clazz, jint quality) {
+        if (quality >= 0 && quality <= 2) {
+            GRAPHICS_QUALITY = quality;
+        }
     }
 
-    // Returns a jump-scare signal
-    JNIEXPORT jboolean JNICALL Java_java_main_Smali_EngineStartLogic_shouldScare(JNIEnv* env, jclass clazz) {
-        return (jboolean)checkScareTrigger();
+    JNIEXPORT jint JNICALL Java_java_graphics_PlayerEngine_getGraphicsQuality(JNIEnv* env, jclass clazz) {
+        return GRAPHICS_QUALITY;
     }
-
-    // Get Native Hallucination Offsets for the Camera
-    JNIEXPORT jfloat JNICALL Java_java_main_Smali_EngineStartLogic_getShakeX(JNIEnv* env, jclass clazz) { return SHAKE_X; }
-    JNIEXPORT jfloat JNICALL Java_java_main_Smali_EngineStartLogic_getShakeZ(JNIEnv* env, jclass clazz) { return SHAKE_Z; }
 }
