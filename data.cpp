@@ -4,31 +4,30 @@ extern "C" {
     // Survival Database
     int32_t PLAYER_HEALTH = 100;
     
-    // NPC Entity Data
+    // NPC AI Entity Data
     bool ENTITY_SPAWNED = false;
     float ENTITY_POS_Z = 0.0f;
 
-    // Vertex Structure for the Mansion Entity
-    struct Vertex {
-        float pos[3];
-        float color[3];
-    };
+    // Touch Input & Camera Data
+    float TOUCH_X = 0.0f;
+    float TOUCH_Y = 0.0f;
+    float CAMERA_YAW = 0.0f;   // Left/Right rotation
+    float CAMERA_PITCH = 0.0f; // Up/Down rotation
 
-    // The "Shape" of the horror (A simple 3D prism)
-    Vertex entityVertices[] = {
-        {{ 0.0f, -0.5f, 0.0f}, {1.0f, 0.0f, 0.0f}}, // Top (Blood Red)
-        {{ 0.5f,  0.5f, 0.0f}, {0.1f, 0.0f, 0.0f}}, // Bottom Right
-        {{-0.5f,  0.5f, 0.0f}, {0.1f, 0.0f, 0.0f}}  // Bottom Left
-    };
+    // Update camera based on delta touch movement
+    void handleTouchInput(float x, float y) {
+        float deltaX = x - TOUCH_X;
+        float deltaY = y - TOUCH_Y;
+        
+        CAMERA_YAW += deltaX * 0.01f;
+        CAMERA_PITCH += deltaY * 0.01f;
+        
+        TOUCH_X = x;
+        TOUCH_Y = y;
+    }
 
     void spawnMansionEntity(float x, float y, float z) {
         ENTITY_SPAWNED = true;
         ENTITY_POS_Z = z;
-    }
-
-    void updateAI() {
-        if (ENTITY_SPAWNED) {
-            ENTITY_POS_Z += 0.05f; // Incremental creep
-        }
     }
 }
