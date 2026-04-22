@@ -38,3 +38,23 @@ void applyDeathPenalty() {
 void runEngineTick() {
     if (SANITY < 0.0f) SANITY = 0.0f;
 }
+
+bool hasLineOfSight(float ex, float ez, float px, float pz) {
+    // Basic Raycast: Check the midpoint between Entity and Player
+    float midX = (ex + px) / 2.0f;
+    float midZ = (ez + pz) / 2.0f;
+
+    // If the midpoint is inside a wall, the view is blocked
+    if (isWallAt(midX, midZ)) {
+        return false; 
+    }
+    return true;
+}
+
+// Update the loop to use visibility
+void updateEntityBehavior(JNIEnv* env) {
+    if (hasLineOfSight(E_X, E_Z, P_X, P_Z)) {
+        // Only process the heartbeat and chase if seen
+        processGameLoop(env);
+    }
+}
