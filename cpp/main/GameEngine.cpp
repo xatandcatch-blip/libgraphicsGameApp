@@ -11,12 +11,26 @@ int SODA_COUNT = 0, SPARE_BATTERIES = 0, DEATH_COUNT = 0;
 int GRAPHICS_QUALITY = 1; 
 float MASTER_VOLUME = 0.8f;
 
-// Logic to check distance to Entity
+// 1. Define Collision First
+bool isWallAt(float x, float z) {
+    if (x > 4.8f || x < -4.8f || z > 4.8f || z < -4.8f) {
+        return true;
+    }
+    return false;
+}
+
+// 2. Define Line of Sight (Now it knows what isWallAt is)
+bool hasLineOfSight(float ex, float ez, float px, float pz) {
+    float midX = (ex + px) / 2.0f;
+    float midZ = (ez + pz) / 2.0f;
+    return !isWallAt(midX, midZ); 
+}
+
 float calculateDistance(float x1, float z1, float x2, float z2) {
     return sqrt(pow(x2 - x1, 2) + pow(z2 - z1, 2));
 }
 
-// THE BRIDGE: Talking to GameLogic.java
+// 3. Game Logic Bridge
 void processGameLoop(JNIEnv* env) {
     float dist = calculateDistance(P_X, P_Z, E_X, E_Z);
 
@@ -24,7 +38,6 @@ void processGameLoop(JNIEnv* env) {
     if (logicClass) {
         jmethodID getRate = env->GetStaticMethodID(logicClass, "getHeartbeatRate", "(F)F");
         float rate = env->CallStaticFloatMethod(logicClass, getRate, dist);
-        // 'rate' now holds the value from your Java code!
     }
 }
 
@@ -37,24 +50,4 @@ void applyDeathPenalty() {
 
 void runEngineTick() {
     if (SANITY < 0.0f) SANITY = 0.0f;
-}
-
-bool hasLineOfSight(float ex, float ez, float px, float pz) {
-    // Basic Raycast: Check the midpoint between Entity and Player
-    float midX = (ex + px) / 2.0f;
-    float midZ = (ez + pz) / 2.0f;
-
-    // If the midpoint is inside a wall, the view is blocked
-    if (isWallAt(midX, midZ)) {
-        return false; 
-    }
-    return true;
-}
-
-// Update the loop to use visibility
-void updateEntityBehavior(JNIEnv* env) {
-    if (hasLineOfSight(E_X, E_Z, P_X, P_Z)) {
-        // Only process the heartbeat and chase if seen
-        processGameLoop(env);
-    }
 }
