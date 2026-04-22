@@ -7,11 +7,17 @@ public class GameLogic {
         isHiding = state;
     }
 
-    public static float getHeartbeatRate(float distance) {
-        if (distance > 20.0f) return 1.0f; // Normal
-        if (distance < 2.0f) return 4.0f;  // Extreme Panic
+    // Flashlight flickers and drains when the Entity is within 5 meters
+    public static float getBatteryDrainRate(float distance) {
+        if (distance > 5.0f) return 0.01f; // Standard drain
         
-        // Linear scale: closer = faster
+        // Rapid drain when the monster is breathing down your neck
+        return 0.01f + (5.0f - distance) / 10.0f;
+    }
+
+    public static float getHeartbeatRate(float distance) {
+        if (distance > 20.0f) return 1.0f;
+        if (distance < 2.0f) return 4.0f;
         return 1.0f + (20.0f - distance) / 5.0f;
     }
 
